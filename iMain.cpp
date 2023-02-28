@@ -5,6 +5,7 @@
     Version: 2.0
 */
 // Crated by Amit Hassan Joy
+// Created by Abu Hurayra Niloy
 
 #include<iostream>
 using namespace std;
