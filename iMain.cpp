@@ -4,17 +4,23 @@
     last modified: October 13, 2015
     Version: 2.0
 */
-
+// Crated by Amit Hassan Joy
 
 #include<iostream>
 using namespace std;
 # include "iGraphics.h"
 
-#define screenwidth 1420
+#define screenwidth 1480
 #define screenHight 1080
-//#define screenwidth 1200 
-//#define screenHight 675
+#define Jumplimit 350
 
+//Defining game states 
+int gamestate = -1;
+//Jump varriables 
+bool jumpUP = false ;
+bool jumpDown = false ;
+bool jump = false ;
+int jumpCordinateY = 0 ;
 //Background Slizes
 char mainBackground[60][30] = { "Background\\tile000.bmp", "Background\\tile001.bmp", "Background\\tile002.bmp", "Background\\tile003.bmp", "Background\\tile004.bmp", "Background\\tile005.bmp", "Background\\tile006.bmp", "Background\\tile007.bmp", "Background\\tile008.bmp", "Background\\tile009.bmp", "Background\\tile010.bmp", "Background\\tile011.bmp", "Background\\tile012.bmp",
 "Background\\tile013.bmp", "Background\\tile014.bmp", "Background\\tile015.bmp", "Background\\tile016.bmp", "Background\\tile017.bmp", "Background\\tile018.bmp", "Background\\tile019.bmp", "Background\\tile020.bmp", "Background\\tile021.bmp", "Background\\tile022.bmp", "Background\\tile023.bmp", "Background\\tile024.bmp", "Background\\tile025.bmp", "Background\\tile026.bmp", "Background\\tile027.bmp", "Background\\tile028.bmp", "Background\\tile029.bmp", "Background\\tile030.bmp" ,
@@ -23,19 +29,32 @@ char mainBackground[60][30] = { "Background\\tile000.bmp", "Background\\tile001.
 
 //Run Slizes
 char characterRun[8][20] = { "Run\\run_001.bmp", "Run\\run_002.bmp", "Run\\run_003.bmp", "Run\\run_004.bmp", "Run\\run_005.bmp", "Run\\run_006.bmp", "Run\\run_007.bmp", "Run\\run_008.bmp"};
+//Jump Slizes
+char JUMP[2][30] = { "Jump//jump_01.bmp", "Jump//jump_02.bmp" };
 
-int Background[60];
+// Obsticle
+char ObsticleSlize [3][40] = { "Obsticle//obstical_01.bmp", "Obsticle//obstical_02.bmp", "Obsticle//obstical_03.bmp" };
+
+
+int obscordinateY = 230 ;
+int OBSticle[3];
+
+
+int Background[60]; //Background slice Index
 
 int mposx,  mposy;
 
 //Character cordinates 
-int charCordinatesX = 125 ;
-int charCordinatesY = 230 ;
-int charIndex = 0;
+int charCordinatesX = 125 ; // Character Initial Cordinate at X axis
+int charCordinatesY = 230 ; // Character Initial Cordinate at Y axis
+int charIndex = 0; //Character Index indicate the character slice number 
+int bgslice = 60; // The total num of Background slices is 60
+int bgslicepixel = 32; // Background slice pixel is 32
 
-bool music = true;
-
-
+bool music = true ;
+// Showing score 
+int score = 0;
+char Number[100];
 /*
 	function iDraw() is called again and again by the system.
 */
@@ -43,23 +62,66 @@ void iDraw()
 {
 	//place your drawing codes here
 	iClear();
-	/*
-	for (int i = 0; i < 2; i++)
+	if (gamestate == -1)
 	{
-		iShowBMP(BG[i], 0, bg[i]);
+		iShowBMP(0, 0, "Menu//menu.bmp");
 	}
-	*/
-	iShowBMP(0 , 0, mainBackground[15]); // First Slize that stay at (0,0)
-	for (int i = 0; i < 60; i++)
-	{
-		iShowBMP(Background[i], 0, mainBackground[i]); // Showing Background Slizes 
-	}
-	//for (int i = 0; i < 4; i++)
-	//{
-	iShowBMP2(charCordinatesX, charCordinatesY, characterRun[charIndex] , 0 ); // Showing Running Slizes 
-	//}
 	
+	else if (gamestate == 1)
+	{
 
+		iShowBMP(0, 0, mainBackground[15]); // First Slize that stay at (0,0)
+	
+		for (int i = 0; i < 60; i++)
+		{
+			iShowBMP(Background[i], 0, mainBackground[i]); // Showing Background Slizes 
+		}
+		for (int j = 0; j < 3; j++)
+		{
+			
+			iShowBMP2(OBSticle[j], obscordinateY, ObsticleSlize[j], 0); // Showing Obsticle Slizes 
+		}
+
+		// Showing Jump UP & Jump Down
+		if (jump)
+		{
+			if (jumpUP)
+				iShowBMP2(charCordinatesX, charCordinatesY + jumpCordinateY, JUMP[0], 0);
+			else
+				iShowBMP2(charCordinatesX, charCordinatesY + jumpCordinateY, JUMP[1], 0);
+		}
+		else
+		{
+			iShowBMP2 ( charCordinatesX , charCordinatesY, characterRun[charIndex] , 0); // Showing Running Slizes 
+		}
+		//Showing score 
+		string scoreText = to_string(score); //converting score to string
+		for (int i = 0; i < scoreText.length(); i++)
+		{
+			Number[i] = scoreText[i]  ; //Counting score according to Box
+		}
+		iSetColor(255, 255, 255); //Setting Colour white 
+		iText(20, 1010, "Score : ", GLUT_BITMAP_TIMES_ROMAN_24); //
+		iText(20, 980, Number , GLUT_BITMAP_TIMES_ROMAN_24);
+	}
+	else if (gamestate == 2)
+	{
+		// showing Instruction
+		iShowBMP(90, 100, "Instruction//instruction_01.bmp");
+
+	}
+	else if (gamestate == 3)
+	{
+		// showing About US 
+		iShowBMP(0, 0, "About//Info.bmp");
+	}
+	else if (gamestate == 5)
+	{
+		// showing About US 
+		//iShowBMP(100, 180, "Game Over//gameover_03.bmp");
+		iShowBMP(0, 0, "Game Over//gameover_03.bmp");
+		PlaySound(0, 0, 0);
+	}
 	
 }
 
@@ -79,10 +141,24 @@ void iMouseMove(int mx, int my)
 */
 void iMouse(int button, int state, int mx, int my)
 {
-	if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	if (gamestate == -1)
 	{
-		//place your codes here
+		if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+		{
+			if (mx >= 514 && mx <= 1006 && my >= 780 && my <= 860)
+			{
+				gamestate = 1;
+			}
+			if (mx >= 514 && mx <= 1006 && my >= 660 && my <= 740)
+				gamestate = 2;
+			if (mx >= 514 && mx <= 1006 && my >= 540 && my <= 620)
+				gamestate = 3;
+			if (mx >= 514 && mx <= 1006 && my >= 420 && my <= 500)
+				exit(0);
+		}
 	}
+
+	
 	
 }
 /*iPassiveMouseMove is called to detect and use
@@ -107,21 +183,45 @@ void iKeyboard(unsigned char key)
 {
 	if(key == 'a' )
 	{
-		
+		charCordinatesX -= 10; //Press a for moving backward 10 at X-Axis
+		if (charCordinatesX <= 0)
+			charCordinatesX = screenwidth;
+
 	}
 	if (key == 's')
 	{
-		//do something with 'q'
+		//charCordinatesY -= 10;
+		//if (charCordinatesY <= 230)
+			//charCordinatesY = 230;
+		//do something with 's'
 	}
 	if (key == 'd')
 	{
-		//do something with 'q'
+		charCordinatesX += 10;  //Press a for moving forward 10 at X-Axis
+		if (charCordinatesX >= screenwidth)
+			charCordinatesX = 0;
 			
 	}
+	//Jump logics 
 	if (key == 'w')
 	{
-		//do something with 'q'
+		if (!jump)
+		{
+			jump = true;
+			jumpUP = true;
+			//jumpDown = true;
+		}
 	}
+	if (key == ' ')
+	{
+		if (!jump)
+		{
+			jump = true;
+			jumpUP = true;
+			//jumpDown = true;
+		}
+	}
+	
 }
 
 /*
@@ -135,8 +235,34 @@ void iKeyboard(unsigned char key)
 */
 void iSpecialKeyboard(unsigned char key)
 {
+	if (key == GLUT_KEY_LEFT)
+	{
+		charCordinatesX -= 10; //Press a for moving backward 10 at X-Axis
+		if (charCordinatesX <= 0)
+			charCordinatesX = screenwidth;
+	}
 
-	if(key == GLUT_KEY_UP)
+	if (key == GLUT_KEY_RIGHT)
+	{
+		charCordinatesX += 10;  //Press a for moving forward 10 at X-Axis
+		if (charCordinatesX >= screenwidth)
+			charCordinatesX = 0;
+	}
+
+	if (key == GLUT_KEY_UP)
+	{
+		if (!jump)
+		{
+			jump = true;
+			jumpUP = true;
+			//jumpDown = true;
+		}
+	}
+	if (key == GLUT_KEY_HOME)
+	{
+		gamestate = -1;
+	}
+	if (key == GLUT_KEY_END)
 	{
 		exit(0);
 	}
@@ -145,12 +271,12 @@ void iSpecialKeyboard(unsigned char key)
 
 void setAll()
 {
+
+		for (int i = 0; i < bgslice; i++)
+		{
+			Background[i] = bgslicepixel * i; //Every slize will shift 32 Pixel at X axis 
+		}
 	
-	
-	for (int i = 0; i < 60; i++)
-	{ 
-		Background[i] = 32 * i; //Every slize will shift 32 Pixel at X axis 
-	}
 }
 
 
@@ -161,32 +287,109 @@ void characterRunchange()
 	{
 		charIndex = 0;
 	}
+	if (jump)
+	{
+		if (jumpUP )
+		{
+			jumpCordinateY += 30;  //Moving forward at Y axis 
+
+			if (jumpCordinateY >= Jumplimit)
+			{
+				jumpUP = false;
+			}
+		}
+
+		else 
+		{
+			jumpCordinateY -= 25 ;  //Moving backward at Y axis 
+			if (jumpCordinateY < 0)
+			{
+				jump = false ;
+				jumpCordinateY = 0 ;
+				jumpDown = false;
+			}
+		}
+	}
 }
 
 
 void Backgroundchange()
 {
-	
-	for (int i = 0; i < 60; i++) 
+	if (gamestate == 1)
 	{
-		Background[i] -= 8; // Shifting 8 at X-axis
-		if (Background[i] <= 0) // if the slize collide  X-axis at Zero then it will disaappear 
+		for (int i = 0; i < bgslice; i++)
 		{
-			Background[i] = screenwidth - 16; 
+			Background[i] -= 16 ; // Shifting 8 at X-axis
+			if (Background[i] <= 0) // if the slize collide  X-axis at Zero then it will disaappear 
+			{
+				Background[i] = screenwidth ;
+			}
 		}
 	}
-	
-	
-
-
 }
+
+
+void Obsticlechange()
+{
+	if (gamestate == 1)
+	{
+		for (int k = 0; k < 3 ; k++)
+		{
+			OBSticle[k] -= 35 ; // Shifting 8 at X-axis
+			
+			if (OBSticle[0] <= 0) // if the slize collide  X-axis at Zero then it will disaappear 
+			{
+				OBSticle[0] = screenwidth + rand() ;
+				score++;
+			}
+			if (OBSticle[1] <= 0) // if the slize collide  X-axis at Zero then it will disaappear 
+			{
+				OBSticle[1] = screenwidth + rand() % 500 + 500 ;
+				score++;
+			}
+			if (OBSticle[2] <= 0) // if the slize collide  X-axis at Zero then it will disaappear 
+			{
+				OBSticle[2] = screenwidth +  rand() % 200  ;
+				score++;
+			}
+		}
+		
+		for (int i = 0; i < 3; i++)
+			{
+				if (jump)
+				{
+					// Jump Collision Logic 
+					if (charCordinatesX + 60 >= OBSticle[i] && charCordinatesX + 60 <= OBSticle[i] + 100 &&
+						charCordinatesY + jumpCordinateY >= obscordinateY  && charCordinatesY + jumpCordinateY <= obscordinateY + 150)
+					{
+						
+						gamestate = 5;
+					}
+				}
+				else
+				{
+					if (charCordinatesX+100 >= OBSticle[i] && charCordinatesX+100 <= OBSticle[i] + 100) //When jump is not true then if the character collided at X axis he will be dead 
+					{
+						gamestate = 5;
+					}
+				}
+			}
+
+	}
+}
+
 
 //
 int main()
 {
 	setAll();
-	iSetTimer(80, characterRunchange); //Run Changing time  
-	iSetTimer(25, Backgroundchange); //Background Changing time
+ 	if (music == true)
+	{
+		PlaySound("Music\\9convert.com - Naruto OST 2  Afternoon of Konoha.wav", NULL, SND_LOOP | SND_ASYNC);
+	}
+	iSetTimer(70, characterRunchange); //Run Changing time 
+	iSetTimer(100, Obsticlechange); //Obsticle Changing time 
+	iSetTimer(15, Backgroundchange); //Background Changing time
 	iInitialize(screenwidth,screenHight, "Agony of Defeat");
 	return 0;
 }
